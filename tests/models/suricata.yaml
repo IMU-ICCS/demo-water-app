@@ -1,0 +1,45 @@
+#
+# Copyright (C) 2026 Institute of Communication and Computer Systems (imu.iccs.gr)
+#
+# This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
+# If a copy of the MPL was not distributed with this file, you can obtain one at
+# https://www.mozilla.org/en-US/MPL/2.0/
+#
+
+apiVersion: nebulous/v1
+kind: MetricModel
+metadata:
+  name: 'Test metric model for Suricata'
+spec:
+  components:
+    - name: dummy_component
+      metrics:
+        - name: count_alerts
+          type: 'as-is'
+          definition: |
+            SELECT COUNT(*) AS metricValue,
+                  3 AS level,
+                  current_timestamp AS timestamp
+            FROM alerts.win:time(1 minute) AS alerts
+          metrics: [ 'alerts' ]
+        - name: all_alerts
+          type: 'as-is'
+          definition: |
+            SELECT *
+            FROM alerts AS alerts
+          metrics: [ 'alerts' ]
+        - name: alerts
+          sensor: none
+
+        - name: "request_count"
+          type: "raw"
+          sensor:
+            type: "prometheus"
+            config:
+              port: "9000"
+              metric: "request_count_total"
+          output: "all 10 sec"
+        - name: "sum_of_all_request_count"
+          type: "composite"
+          template: ""
+          formula: "add(request_count)"

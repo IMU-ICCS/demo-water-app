@@ -1,0 +1,10 @@
+
+logging:
+  level:
+    root: INFO
+
+suricata:
+  eveFilePath: /var/log/suricata/eve.json
+  amq-connection-string: tcp://localhost:61616
+  amq-username: aaa
+  amq-password: 111

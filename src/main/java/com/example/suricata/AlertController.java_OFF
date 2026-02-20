@@ -1,0 +1,21 @@
+package com.example.suricata;
+
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+
+@RestController
+public class AlertController {
+
+    private final AlertService service;
+
+    public AlertController(AlertService service) {
+        this.service = service;
+    }
+
+    @GetMapping(value = "/alerts/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<SuricataAlert> streamAlerts() {
+        return service.streamAlerts();
+    }
+}

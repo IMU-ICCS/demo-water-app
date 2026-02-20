@@ -1,0 +1,133 @@
+
+services:
+
+  suricata:
+    container_name: "suricata"
+    image: jasonish/suricata:8.0.3
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_NICE
+    volumes:
+      - suricata_logs:/var/log/suricata
+      - ./suricata/lib:/var/lib/suricata
+      - ./suricata/etc:/etc/suricata
+    command: ["-i", "eth0"]
+    restart: "no"
+
+  ems:
+    container_name: "ems"
+    image: ${EMS_SERVER_IMAGE}:${EMS_SERVER_IMAGE_TAG}
+    environment:
+      #
+      # ===== INITIALIZATION settings =====
+      - JASYPT_PASSWORD=${P_JASYPT_PASSWORD}
+      #
+      # ===== Keys and Certificate generation settings =====
+      # ===== External dependencies settings =====
+      - EXTRA_LOADER_PATHS=/plugins/*               # the paths inside EMS server container
+      - SCAN_PACKAGES=eu.nebulous.ems               # packages to scan for components (Nebulous)
+      #
+      # ===== EMS Control Service settings =====
+      - EMS_IP_SETTING=DEFAULT_IP
+      - EMS_PRELOAD_APP_MODEL=suricata.yaml
+      #
+      # =====  Security and Web Management settings  =====
+      - CONTROL_SSL_KEY_ENTRY_GENERATE=ALWAYS
+      - CONTROL_SSL_KEYSTORE_PASSWORD=${P_KEYSTORE_PASSWORD}
+      - CONTROL_SSL_TRUSTSTORE_PASSWORD=${P_KEYSTORE_PASSWORD}
+      #
+      #- MELODIC_SECURITY_ENABLED=false
+      - JWT_SECRET=${P_JWT_SECRET}
+      - WEB_SECURITY_JWT_AUTHENTICATION_REQUEST_PARAMETER=jwt
+      - WEB_SECURITY_JWT_AUTHENTICATION_PRINT_SAMPLE_TOKEN=true
+      - WEB_SECURITY_API_KEY_AUTHENTICATION_VALUE=${P_WEB_API_KEY_VALUE}
+      - WEB_SECURITY_FORM_AUTHENTICATION_PASSWORD=${P_WEB_ADMIN_PASSWORD}
+      #
+      # ===== EMS server --DEBUG-- settings =====
+      - CONTROL_SKIP_MVV_RETRIEVE=true
+      - CONTROL_SKIP_METASOLVER=true
+      - CONTROL_SKIP_NOTIFICATION=true
+      #
+      # ===== EMS beacon settings =====
+      - BEACON_ENABLED=false
+      #
+      # ===== EMS server exit and restart settings =====
+      - CONTROL_EXIT_ALLOWED=true
+      - RESTART_EXIT_CODE=99
+      #
+      # ===== Broker-CEP settings =====
+      - BROKERCEP_AUTHENTICATION_ENABLED=false
+      - BROKERCEP_ADDITIONAL_BROKER_CREDENTIALS=${P_BROKERCEP_CREDENTIALS:-}
+      - BROKERCEP_EVENT_RECORDER_ENABLED=false
+      #
+      # ===== Baguette Server settings =====
+      - BAGUETTE_SERVER_CREDENTIALS=${P_BAGUETTE_SERVER_CREDENTIALS:-{}
+      #
+      # ===== Baguette Client Install settings =====
+      - BAGUETTE_CLIENT_INSTALL_PARAMETERS_SKIP_NETDATA_INSTALLATION=true
+      - BAGUETTE_CLIENT_INSTALL_PARAMETERS_SKIP_JRE_INSTALLATION=true
+      - BAGUETTE_CLIENT_INSTALL_PARAMETERS_SKIP_OLD_BAGUETTE_INSTALLATION_REMOVAL=true
+      - BAGUETTE_CLIENT_INSTALL_PARAMETERS_SKIP_BAGUETTE_INSTALLATION=true
+      - BAGUETTE_CLIENT_INSTALL_PARAMETERS_ENABLE_BAGUETTE_CONF_COPY=true
+      #
+      - BAGUETTE_CLIENT_INSTALL_FILE_POST_PROCESSING_RULES_FILE=/file-post-processing-rules.yaml
+      #
+      # ===== Kubernetes settings =====
+      - K8S_ENABLED=false
+      - K8S_WATCHER_ENABLED=false
+      - K8S_DEPLOY_EMS_CLIENTS_ON_KUBERNETES_ENABLED=false
+      #
+      - EXTERNAL_ENABLED=false
+      #
+      # ===== EMS server post-boot command =====
+      - POST_BOOT_COMMAND=/deploy-ems-clients.sh
+      #- POST_BOOT_COMMAND_EXEC_POLL=5
+      #- POST_BOOT_COMMAND_DELAY=0
+      #
+    ports:
+      - "8111:8111"
+      - "61616:61616"
+      - "5672:5672"
+    volumes:
+      - ./logs:/opt/ems-server/logs
+      - ./models/:/opt/ems-server/models
+      - ./deploy-ems-clients.sh:/deploy-ems-clients.sh
+      - ./file-post-processing-rules.yaml:/file-post-processing-rules.yaml
+
+  vm1:
+    container_name: "vm1"
+    hostname: "vm1"
+    image: ${P_VM_IMAGE}
+    build:
+      context: ./vm
+      args:
+        VM_BASE_IMAGE: ${P_VM_BASE_IMAGE:-}
+        ROOT_PASSWORD: ${P_VM_ROOT_PASSWORD}
+        EMS_CLIENT_IMAGE: ${P_EMS_CLIENT_IMAGE:-}
+    ports:
+      - "1016:61616"
+      - "1072:5672"
+    volumes:
+      - ../:/app
+      - suricata_logs:/var/log/suricata
+
+  vm2:
+    container_name: "vm2"
+    hostname: "vm2"
+    image: ${P_VM_IMAGE}
+    ports:
+      - "2016:61616"
+      - "2072:5672"
+
+  vm3:
+    container_name: "vm3"
+    hostname: "vm3"
+    image: ${P_VM_IMAGE}
+    ports:
+      - "3016:61616"
+      - "3072:5672"
+
+volumes:
+  suricata_logs:

@@ -1,0 +1,2 @@
+'baguette-client.yml':
+  'authentication\-enabled\: true': "authentication-enabled: false"
