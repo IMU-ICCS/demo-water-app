@@ -14,7 +14,7 @@ services:
       - ./suricata/lib:/var/lib/suricata
       - ./suricata/etc:/etc/suricata
     command: ["-i", "eth0"]
-    restart: "no"
+    #restart: "no"
 
   ems:
     container_name: "ems"

@@ -1,5 +1,4 @@
-java.io.InvalidClassException: gr.iccs.imu.ems.brokercep.event.EventMap; local class incompatible: stream classdesc serialVersionUID = 1448501149489746524, local class serialVersionUID = 194966407015717851
-ems       |     at java.base/java.io.ObjectStreamClass.initNonProxy(Unknown Source)
+
 ---------------------------------------
 # Starts EMS server and deploys EMS clients to vm1,vm2,vm3
 cd tests
