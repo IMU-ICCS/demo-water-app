@@ -1,23 +1,34 @@
 
 ---------------------------------------
+# Starts EMS server and deploys EMS clients to vm1,vm2,vm3
 cd tests
 docker compose up
 ---------------------------------------
+# Starts suricata-to-EMS bridge (alerts publisher)
 docker exec -it vm1 bash
 cd /app
 java -jar target/suricata-alert-streamer-1.0.0.jar
----OR--
+---OR---
 cd /app/python
 source venv/bin/activate
 python3 suricata-alert-publisher.py
 ---------------------------------------
+# Starts a dummy Prometheus endpoint
+docker exec -it vm1 bash
+cd /app/python
+source venv/bin/activate
+python3 simple-prometheus-exporter.py
+---------------------------------------
+# Monitor EMS client events at vm1
 docker exec -it vm1 bash
 cd /root/baguette-client/
 ./bin/client.sh receive -Uaaa -P111 tcp://localhost:61616?%KAP% alerts
 ---------------------------------------
+# Monitor EMS server events
 docker exec -it ems bash
 ./bin/client.sh receive -Uaaa -P111 tcp://localhost:61616?%KAP% '>'
 ---------------------------------------
+# Trigger alerts
 docker exec -it suricata bash
 curl http://testmyids.com
 ---------------------------------------
