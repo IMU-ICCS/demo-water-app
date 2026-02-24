@@ -1,14 +1,24 @@
-
+java.io.InvalidClassException: gr.iccs.imu.ems.brokercep.event.EventMap; local class incompatible: stream classdesc serialVersionUID = 1448501149489746524, local class serialVersionUID = 194966407015717851
+ems       |     at java.base/java.io.ObjectStreamClass.initNonProxy(Unknown Source)
 ---------------------------------------
 # Starts EMS server and deploys EMS clients to vm1,vm2,vm3
 cd tests
 docker compose up
 ---------------------------------------
+# # Starts suricata-to-EMS bridge (alerts publisher)
+# docker exec -it vm1 bash
+# cd /app
+# java -jar target/suricata-alert-streamer-1.0.0.jar
+---------------------------------------
 # Starts suricata-to-EMS bridge (alerts publisher)
 docker exec -it vm1 bash
-cd /app
-java -jar target/suricata-alert-streamer-1.0.0.jar
----OR---
+    ---RUN ONLY ONCE---
+    apt update
+    apt install -y python3.12-venv
+    python3 -m venv /app/python/venv
+    source venv/bin/activate
+    pip3 install -r requirements.txt
+---MAIN---
 cd /app/python
 source venv/bin/activate
 python3 suricata-alert-publisher.py
@@ -30,6 +40,10 @@ docker exec -it ems bash
 ---------------------------------------
 # Trigger alerts
 docker exec -it suricata bash
+---RUN ONLY ONCE--
+suricata-update
+restart
+---TRIGGER ALERTS---
 curl http://testmyids.com
 ---------------------------------------
 
