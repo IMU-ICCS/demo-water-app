@@ -1,0 +1,62 @@
+#
+# Copyright (C) 2026 Institute of Communication and Computer Systems (imu.iccs.gr)
+#
+# This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
+# If a copy of the MPL was not distributed with this file, you can obtain one at
+# https://www.mozilla.org/en-US/MPL/2.0/
+#
+
+apiVersion: nebulous/v1
+kind: MetricModel
+metadata:
+  name: 'Test metric model for Suricata'
+spec:
+  components:
+    - name: zone_7_pump_component
+      metrics:
+        - name: attack_probability
+          type: "composite"
+          # Michaelis–Menten Form (Rational Saturation)
+          # f(x) = (L * x) / (K + x)
+          # L: plateau (saturation) value
+          # K: half-saturation constant. Controls where the curve bends toward the plateau.
+          # L=100, K=0.0505  ...  f(0.0505) = 100/2 = 50
+          formula: "(100 * attack_probability_aux2) / (0.0505 + attack_probability_aux2)"
+        - name: attack_probability_aux2
+          type: "composite"
+          formula: "if(attack_probability_aux>0, attack_probability_aux, 0)"
+        - name: attack_probability_aux
+          type: "composite"
+          formula: "count_alerts * (water_consumption_avg - 600)"
+          window: 'sliding 2 min'
+
+        - name: count_alerts
+          type: 'as-is'
+          definition: |
+            SELECT COUNT(*) AS metricValue,
+                  3 AS level,
+                  current_timestamp AS timestamp
+            FROM alerts.win:time(1 minute) AS alerts
+          metrics: [ 'alerts' ]
+        - name: all_alerts
+          type: 'as-is'
+          definition: |
+            SELECT *
+            FROM alerts AS alerts
+          metrics: [ 'alerts' ]
+        - name: alerts
+          sensor: none
+
+        - name: "water_consumption_instant"
+          type: "raw"
+          sensor:
+            type: "prometheus"
+            config:
+              port: "9000"
+              metric: "water_consumption_lpm"
+          output: "all 10 sec"
+        - name: "water_consumption_avg"
+          type: "composite"
+          template: ""
+          formula: "mean(water_consumption_instant)"
+          window: 'sliding 5 min'

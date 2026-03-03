@@ -19,6 +19,7 @@ services:
   ems:
     container_name: "ems"
     image: ${EMS_SERVER_IMAGE}:${EMS_SERVER_IMAGE_TAG}
+    restart: "unless-stopped"
     environment:
       #
       # ===== INITIALIZATION settings =====
@@ -31,7 +32,7 @@ services:
       #
       # ===== EMS Control Service settings =====
       - EMS_IP_SETTING=DEFAULT_IP
-      - EMS_PRELOAD_APP_MODEL=suricata.yaml
+      - EMS_PRELOAD_APP_MODEL=water.yaml
       #
       # =====  Security and Web Management settings  =====
       - CONTROL_SSL_KEY_ENTRY_GENERATE=ALWAYS
@@ -109,6 +110,7 @@ services:
     ports:
       - "1016:61616"
       - "1072:5672"
+      - "9000:9000"
     volumes:
       - ../:/app
       - suricata_logs:/var/log/suricata

@@ -25,6 +25,8 @@ cpu_usage = Gauge('cpu_usage_percent', 'CPU usage percentage')
 gpu_usage = Gauge('gpu_usage_percent', 'GPU usage percentage')
 mem_usage = Gauge('memory_usage_percent', 'RAM usage percentage')
 
+water_usage = Gauge('water_consumption_lpm', 'Instant Water consumption (L/min)')
+
 def get_cpu_usage():
     return psutil.cpu_percent(interval=1)
 
@@ -37,6 +39,7 @@ def process_request(t):
     cpu_usage.set(get_cpu_usage())
 #     gpu_usage
 #     mem_usage
+    water_usage.set( random.randint(50, 1000) )
 
 if __name__ == '__main__':
     # Start up the server to expose the metrics.
@@ -44,4 +47,5 @@ if __name__ == '__main__':
     print(f'Exposing Prometheus metrics at port: {PORT}')
     # Generate some requests.
     while True:
-        process_request(5 + 5 * random.random())
+        # process_request(5 + 5 * random.random())
+        process_request(2)
