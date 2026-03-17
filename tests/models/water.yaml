@@ -29,6 +29,7 @@ spec:
           type: "composite"
           formula: "count_alerts * (water_consumption_avg - 600)"
           window: 'sliding 2 min'
+          output: 'last 10 sec'
 
         - name: count_alerts
           type: 'as-is'
@@ -60,3 +61,4 @@ spec:
           template: ""
           formula: "mean(water_consumption_instant)"
           window: 'sliding 5 min'
+          output: 'all 10 sec'
