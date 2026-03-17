@@ -10,6 +10,7 @@ from prometheus_client import start_http_server, Counter, Summary, Gauge
 import random
 import time
 import psutil
+import os
 
 # Port of Prometheus endpoint
 PORT = 9000
@@ -27,8 +28,31 @@ mem_usage = Gauge('memory_usage_percent', 'RAM usage percentage')
 
 water_usage = Gauge('water_consumption_lpm', 'Instant Water consumption (L/min)')
 
+# Parameters file
+PARAMS_FILE = "params.txt"
+
 def get_cpu_usage():
     return psutil.cpu_percent(interval=1)
+
+def random_from_file(filename):
+    lower, upper = 0, 1000  # defaults
+
+    try:
+        if os.path.exists(filename):
+            with open(filename, 'r') as f:
+                line = f.readline().strip()
+                if line:
+                    parts = line.replace(',', ' ').split()
+                    if len(parts) >= 2:
+                        lower = float(parts[0])
+                        upper = float(parts[1])
+    except Exception:
+        # If anything goes wrong, keep defaults
+        pass
+
+    # Generate random number
+    # return random.uniform(lower, upper)
+    return random.randint(int(lower), int(upper))
 
 # Decorate function with metric.
 @REQUEST_TIME.time()
@@ -39,7 +63,8 @@ def process_request(t):
     cpu_usage.set(get_cpu_usage())
 #     gpu_usage
 #     mem_usage
-    water_usage.set( random.randint(50, 1000) )
+#     water_usage.set( random.randint(50, 1000) )
+    water_usage.set( random_from_file(PARAMS_FILE) )
 
 if __name__ == '__main__':
     # Start up the server to expose the metrics.
