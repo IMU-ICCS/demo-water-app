@@ -1,0 +1,62 @@
+
+##### INSTALL UBUNTU 20 VM #####
+https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-20-04
+
+
+##### INSTALL SURICATA #####
+# ChatGPT
+# https://docs.suricata.io/en/latest/quickstart.html
+# https://www.digitalocean.com/community/tutorials/how-to-install-suricata-on-ubuntu-20-04
+
+sudo apt update
+sudo apt upgrade -y
+
+sudo apt install suricata jq -y
+......
+sudo suricata --build-info
+sudo systemctl status suricata
+
+ip a
+>>> ens5
+ip -p -j route show default
+>>> [ {
+        "dst": "default",
+        "gateway": "172.31.32.1",
+        "dev": "ens5",
+        "protocol": "dhcp",
+        "prefsrc": "172.31.32.127",
+        "metric": 100,
+        "flags": [ ]
+    } ]
+
+sudo vim /etc/suricata/suricata.yaml
+>>> CHANGE:
+af-packet:
+  - interface: ens5
+
+sudo suricata-update
+#sudo suricata-update list-sources
+#sudo suricata-update enable-source tgreen/hunting
+
+# Test config.
+sudo suricata -c /etc/suricata/suricata.yaml -i ens5
+# -OR-
+sudo suricata -T -c /etc/suricata/suricata.yaml -v
+>>> Notice: suricata: Configuration provided was successfully loaded. Exiting.
+
+
+sudo systemctl restart suricata
+sudo systemctl status suricata
+sudo systemctl enable suricata
+
+sudo tail -f /var/log/suricata/fast.log
+sudo tail -f /var/log/suricata/suricata.log
+
+# Test
+curl http://testmynids.org/uid/index.html
+
+# Extra
+sudo tail -f /var/log/suricata/eve.json | jq 'select(.event_type=="alert")'
+sudo tail -f /var/log/suricata/eve.json | jq 'select(.event_type=="stats")|.stats.capture.kernel_packets'
+sudo tail -f /var/log/suricata/eve.json | jq 'select(.event_type=="stats")'
+jq 'select(.alert .signature_id==2100498)' /var/log/suricata/eve.json
