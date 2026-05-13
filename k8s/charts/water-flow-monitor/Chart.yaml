@@ -1,0 +1,6 @@
+apiVersion: v2
+name: water-flow-monitor
+description: Water flow prometheus exporter pod
+type: application
+version: 0.1.0
+appVersion: "1.0"

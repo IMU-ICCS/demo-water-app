@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "suricata-log-processor.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "suricata-log-processor.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "suricata-log-processor.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "suricata-log-processor.labels" . | nindent 8 }}
+      annotations:
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+    spec:
+      restartPolicy: Always
+
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+
+      containers:
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Starting Suricata Log processor..."
+              python3 -u /app/suricata-alert-publisher.py | tee -a /app/logs/suricata-alert-publisher.log
+              echo "Exiting"
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+          volumeMounts:
+            - name: app-params
+              mountPath: {{ .Values.appParams.mountPath }}
+              readOnly: true
+            - name: app-logs
+              mountPath: {{ .Values.appLogs.mountPath }}
+            - name: suricata-logs
+              mountPath: {{ .Values.suricataLogs.mountPath }}
+
+          env:
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+            - name: K8S_NODE_ADDRESS
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+
+            - name: ACTIVEMQ_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "suricata-log-processor.fullname" . }}
+                  key: BROKER_USERNAME
+
+            - name: ACTIVEMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "suricata-log-processor.fullname" . }}
+                  key: BROKER_PASSWORD
+
+          {{- if .Values.probes.enabled }}
+          livenessProbe:
+            {{- toYaml .Values.probes.liveness | nindent 12 }}
+
+          readinessProbe:
+            {{- toYaml .Values.probes.readiness | nindent 12 }}
+          {{- end }}
+
+      volumes:
+        - name: app-params
+          hostPath:
+            path: {{ .Values.appParams.hostPath }}
+            type: File
+        - name: app-logs
+          hostPath:
+            path: {{ .Values.appLogs.hostPath }}
+            type: Directory
+        - name: suricata-logs
+          hostPath:
+            path: {{ .Values.suricataLogs.hostPath }}
+            type: Directory

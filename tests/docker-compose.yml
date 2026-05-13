@@ -13,6 +13,8 @@ services:
       - suricata_logs:/var/log/suricata
       - ./suricata/lib:/var/lib/suricata
       - ./suricata/etc:/etc/suricata
+      # For use with 'k8s-new'
+      - ../k8s-new/suricata-data/log:/var/log/suricata
     command: ["-i", "eth0"]
     #restart: "no"
 

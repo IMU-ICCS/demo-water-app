@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "suricata-log-processor.fullname" . }}
+  namespace: {{ .Values.namespace }}
+data:
+  BROKER_USERNAME: {{ .Values.config.brokerUsername | quote }}

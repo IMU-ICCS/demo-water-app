@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: suricata-script-cm
+  namespace: default
+data:
+  process_eve.py: |
+    import json
+    import time
+
+    log_file = "/var/log/suricata/eve.json"
+
+    def follow(filename):
+        filename.seek(0, 2)  # Go to end of file
+        while True:
+            line = filename.readline()
+            if not line:
+                time.sleep(0.5)
+                continue
+            yield line
+
+    with open(log_file) as f:
+        for line in follow(f):
+            try:
+                event = json.loads(line)
+                # Print signature if alert exists
+                print(f"New Suricata event: {event.get('alert', {}).get('signature', 'No signature')}")
+            except json.JSONDecodeError:
+                continue
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: suricata-log-processor
+  namespace: default
+spec:
+  restartPolicy: Always
+  containers:
+  - name: python
+    image: python:3.12-slim
+    #command: ["python3", "-u", "/scripts/process_eve.py"]
+    command: ["/bin/sh", "-c"]
+    args:
+      - |
+        echo "Starting Suricata Log processor..."
+        pip3 install -r /app/requirements.txt
+        python3 -u /app/simple-prometheus-exporter.py |tee -a /app/simple-prometheus-exporter.log &
+        python3 -u /app/suricata-alert-publisher.py |tee -a /app/suricata-alert-publisher.log &
+        wait
+        echo "Exiting"
+    volumeMounts:
+      - name: suricata-logs
+        mountPath: /var/log/suricata
+      - name: script-volume
+        mountPath: /scripts
+      - name: suricata-log-processor
+        mountPath: /app
+    env:
+      #
+      # K8S cluster node info
+      #
+      - name: K8S_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: K8S_NODE_ADDRESS
+        valueFrom:
+          fieldRef:
+            fieldPath: status.hostIP
+      - name: ACTIVEMQ_USERNAME
+        valueFrom:
+          configMapKeyRef:
+            name: monitoring-configmap
+            key: BROKER_USERNAME
+      - name: ACTIVEMQ_PASSWORD
+        valueFrom:
+          configMapKeyRef:
+            name: monitoring-configmap
+            key: BROKER_PASSWORD
+  volumes:
+    - name: suricata-logs
+      hostPath:
+        path: /var/log/suricata       # Path to Suricata logs on the host
+        type: Directory
+    - name: suricata-log-processor
+      hostPath:
+        path: /home/ubuntu/suricata-log-processor       # Path to Suricata log processor app on the host
+        type: Directory
+    - name: script-volume
+      configMap:
+        name: suricata-script-cm

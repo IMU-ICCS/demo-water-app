@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: delete-runtime-configmap
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  template:
+    spec:
+      containers:
+        - name: delete-configmap
+          image: bitnami/kubectl:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Deleting runtime-created EMS resources...";
+              kubectl delete ds/ems-client-daemonset  cm/ems-client-configmap  cm/monitoring-configmap  --ignore-not-found  || true ;
+              echo "Deleting runtime-created EMS resources... done"
+      restartPolicy: Never

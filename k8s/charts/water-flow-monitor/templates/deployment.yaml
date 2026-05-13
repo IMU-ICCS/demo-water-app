@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "water-flow-monitor.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "water-flow-monitor.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "water-flow-monitor.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "water-flow-monitor.labels" . | nindent 8 }}
+      annotations:
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+    spec:
+      restartPolicy: Always
+
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+
+      containers:
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Starting Water flow monitor..."
+              python3 -u /app/simple-prometheus-exporter.py | tee -a /app/logs/simple-prometheus-exporter.log
+              echo "Exiting"
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+          volumeMounts:
+            - name: app-base
+              mountPath: {{ .Values.appBase.mountPath }}
+              readOnly: true
+            - name: app-logs
+              mountPath: {{ .Values.appLogs.mountPath }}
+
+          env:
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+            - name: K8S_NODE_ADDRESS
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+
+          {{- if .Values.probes.enabled }}
+          livenessProbe:
+            {{- toYaml .Values.probes.liveness | nindent 12 }}
+
+          readinessProbe:
+            {{- toYaml .Values.probes.readiness | nindent 12 }}
+          {{- end }}
+
+      volumes:
+        - name: app-base
+          hostPath:
+            path: {{ .Values.appBase.hostPath }}
+            type: Directory
+        - name: app-logs
+          hostPath:
+            path: {{ .Values.appLogs.hostPath }}
+            type: Directory

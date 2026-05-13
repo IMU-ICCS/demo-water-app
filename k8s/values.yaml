@@ -1,0 +1,7 @@
+﻿
+suricata-log-processor:
+  enabled: true
+water-flow-monitor:
+  enabled: true
+ems-server:
+  enabled: true

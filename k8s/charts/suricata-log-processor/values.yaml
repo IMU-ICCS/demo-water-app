@@ -1,0 +1,58 @@
+namespace: default
+
+replicaCount: 1
+
+image:
+  repository: ipatini/suricata-log-processor
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+podAnnotations: {}
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+appParams:
+  hostPath: /mnt/host/suricata-log-processor/params.txt
+  mountPath: /app/params.txt
+
+appLogs:
+  hostPath: /mnt/host/suricata-log-processor/logs
+  mountPath: /app/logs
+
+suricataLogs:
+  hostPath: /mnt/host/suricata-data/log
+  mountPath: /var/log/suricata
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+config:
+  brokerUsername: aaa
+
+secret:
+  brokerPassword: 111
+
+probes:
+  enabled: true
+  liveness:
+    exec:
+      command:
+        - pgrep
+        - python3
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  readiness:
+    exec:
+      command:
+        - pgrep
+        - python3
+    initialDelaySeconds: 10
+    periodSeconds: 5
