@@ -2,6 +2,11 @@
 ---------------------------------------
 -- Preparation
 ---------------------------------------
+Build or push 'suricata-log-processor' image
+cd suricata-log-processor
+docker build -t ....../suricata-log-processor .
+docker push ....../suricata-log-processor:latest
+---------------------------------------
 cd k8s
 kind  create cluster --config kind/config-3-nodes.yaml
 ---------------------------------------

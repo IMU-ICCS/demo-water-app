@@ -14,7 +14,7 @@ docker exec -it vm1 bash
     ---RUN ONLY ONCE---
     apt update
     apt install -y python3.12-venv
-    python3 -m venv /app/python/venv
+    python3 -m venv /app/suricata-log-processor/venv
     source venv/bin/activate
     pip3 install -r requirements.txt
 ---MAIN---
@@ -24,7 +24,7 @@ python3 suricata-alert-publisher.py
 ---------------------------------------
 # Starts a dummy Prometheus endpoint
 docker exec -it vm1 bash
-cd /app/python
+cd /app/suricata-log-processor
 source venv/bin/activate
 python3 simple-prometheus-exporter.py
 ---------------------------------------
@@ -65,7 +65,7 @@ docker compose up
 docker-compose.yml:
   vm1:
     volumes:
-      - /f/NTUA/CIPHER/CODE/eve-test-app:/app
+      - .:/app
       - suricata_logs:/app/logs
 volumes:
   suricata_logs:
