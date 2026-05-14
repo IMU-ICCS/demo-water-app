@@ -33,12 +33,12 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
 
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              echo "Starting Water flow monitor..."
-              python3 -u /app/simple-prometheus-exporter.py | tee -a /app/logs/simple-prometheus-exporter.log
-              echo "Exiting"
+#          command: ["/bin/sh", "-c"]
+#          args:
+#            - |
+#              echo "Starting Water flow monitor..."
+#              python3 -u /app/simple-prometheus-exporter.py | tee -a /app/logs/simple-prometheus-exporter.log
+#              echo "Exiting"
 
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
@@ -48,6 +48,9 @@ spec:
               mountPath: {{ .Values.appLogs.mountPath }}
 
           env:
+            - name: MODE
+              value: prometheus   # Start prometheus exporter app (rather than default suricata-alert-publisher)
+
             - name: K8S_NODE_NAME
               valueFrom:
                 fieldRef:

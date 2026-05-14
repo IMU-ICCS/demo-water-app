@@ -5,7 +5,7 @@ replicaCount: 1
 image:
   repository: ipatini/suricata-log-processor
   tag: "latest"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 podAnnotations: {}
 

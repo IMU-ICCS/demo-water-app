@@ -1,7 +1,9 @@
 #!/bin/sh
 
 while true; do
-    python3 -u /app/suricata-alert-publisher.py
+    mkdir -p /app/logs/
+    set -o pipefail
+    python3 -u /app/suricata-alert-publisher.py 2>&1 | tee -a /app/logs/suricata-alert-publisher.log
     exit_code=$?
 
     if [ $exit_code -eq 0 ]; then

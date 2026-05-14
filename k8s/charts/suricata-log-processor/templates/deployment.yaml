@@ -33,12 +33,12 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
 
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              echo "Starting Suricata Log processor..."
-              python3 -u /app/suricata-alert-publisher.py | tee -a /app/logs/suricata-alert-publisher.log
-              echo "Exiting"
+#          command: ["/bin/sh", "-c"]
+#          args:
+#            - |
+#              echo "Starting Suricata Log processor..."
+#              python3 -u /app/suricata-alert-publisher.py | tee -a /app/logs/suricata-alert-publisher.log
+#              echo "Exiting"
 
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
