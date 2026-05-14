@@ -17,10 +17,6 @@ resources:
     cpu: 100m
     memory: 128Mi
 
-appBase:
-  hostPath: /mnt/host/suricata-log-processor
-  mountPath: /app/
-
 appLogs:
   hostPath: /mnt/host/suricata-log-processor/logs
   mountPath: /app/logs

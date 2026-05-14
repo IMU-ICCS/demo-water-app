@@ -44,9 +44,6 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
 
           volumeMounts:
-            - name: app-base
-              mountPath: {{ .Values.appBase.mountPath }}
-              readOnly: true
             - name: app-logs
               mountPath: {{ .Values.appLogs.mountPath }}
 
@@ -70,10 +67,6 @@ spec:
           {{- end }}
 
       volumes:
-        - name: app-base
-          hostPath:
-            path: {{ .Values.appBase.hostPath }}
-            type: Directory
         - name: app-logs
           hostPath:
             path: {{ .Values.appLogs.hostPath }}

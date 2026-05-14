@@ -1,0 +1,17 @@
+
+services:
+
+  suricata:
+    container_name: "suricata"
+    image: jasonish/suricata:8.0.3
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_NICE
+    volumes:
+      - ./suricata-data/lib:/var/lib/suricata
+      - ./suricata-data/etc:/etc/suricata
+      - ./suricata-data/log:/var/log/suricata
+    command: ["-i", "eth0"]
+    #restart: "no"
