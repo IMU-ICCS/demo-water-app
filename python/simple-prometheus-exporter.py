@@ -7,7 +7,9 @@
 #
 
 from prometheus_client import start_http_server, Counter, Summary, Gauge
+from prometheus_client import generate_latest, REGISTRY
 import random
+from datetime import datetime
 import time
 import psutil
 import os
@@ -27,6 +29,15 @@ gpu_usage = Gauge('gpu_usage_percent', 'GPU usage percentage')
 mem_usage = Gauge('memory_usage_percent', 'RAM usage percentage')
 
 water_usage = Gauge('water_consumption_lpm', 'Instant Water consumption (L/min)')
+
+metrics_to_print = {
+    "request_count_total",
+    "request_processing_seconds_count",
+    "cpu_usage_percent",
+    "gpu_usage_percent",
+    "memory_usage_percent",
+    "water_consumption_lpm",
+}
 
 # Parameters file
 PARAMS_FILE = "params.txt"
@@ -65,6 +76,20 @@ def process_request(t):
 #     mem_usage
 #     water_usage.set( random.randint(50, 1000) )
     water_usage.set( random_from_file(PARAMS_FILE) )
+    print_current_values()
+
+def print_current_values():
+    # Print all metrics in Prometheus exposition format
+    #print(generate_latest(REGISTRY).decode("utf-8"))
+
+    # Print only configured metrics' values
+    print('--------------------------------------')
+    print(datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S %Z%z"))
+    print('--------------------------------------')
+    for metric in REGISTRY.collect():
+        for sample in metric.samples:
+            if sample.name in metrics_to_print:
+                print(f"{sample.name} = {sample.value}")
 
 if __name__ == '__main__':
     # Start up the server to expose the metrics.
@@ -72,5 +97,9 @@ if __name__ == '__main__':
     print(f'Exposing Prometheus metrics at port: {PORT}')
     # Generate some requests.
     while True:
-        # process_request(5 + 5 * random.random())
-        process_request(2)
+        try:
+            # process_request(5 + 5 * random.random())
+            process_request(2)
+        except KeyboardInterrupt:
+            print("Interrupted")
+            exit(0)
