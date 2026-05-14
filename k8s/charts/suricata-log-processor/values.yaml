@@ -17,10 +17,6 @@ resources:
     cpu: 100m
     memory: 128Mi
 
-appParams:
-  hostPath: /mnt/host/suricata-log-processor/params.txt
-  mountPath: /app/params.txt
-
 appLogs:
   hostPath: /mnt/host/suricata-log-processor/logs
   mountPath: /app/logs
@@ -33,11 +29,8 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 
-config:
-  brokerUsername: aaa
-
-secret:
-  brokerPassword: 111
+emsclient:
+  configmap: monitoring-configmap
 
 probes:
   enabled: true

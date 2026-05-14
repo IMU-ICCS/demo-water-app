@@ -44,9 +44,6 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
 
           volumeMounts:
-            - name: app-params
-              mountPath: {{ .Values.appParams.mountPath }}
-              readOnly: true
             - name: app-logs
               mountPath: {{ .Values.appLogs.mountPath }}
             - name: suricata-logs
@@ -63,16 +60,21 @@ spec:
                 fieldRef:
                   fieldPath: status.hostIP
 
+            - name: ACTIVEMQ_URL
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
             - name: ACTIVEMQ_USERNAME
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "suricata-log-processor.fullname" . }}
+                  name: {{ .Values.emsclient.configmap }}
                   key: BROKER_USERNAME
 
             - name: ACTIVEMQ_PASSWORD
               valueFrom:
-                secretKeyRef:
-                  name: {{ include "suricata-log-processor.fullname" . }}
+                configMapKeyRef:
+                  name: {{ .Values.emsclient.configmap }}
                   key: BROKER_PASSWORD
 
           {{- if .Values.probes.enabled }}
@@ -84,10 +86,6 @@ spec:
           {{- end }}
 
       volumes:
-        - name: app-params
-          hostPath:
-            path: {{ .Values.appParams.hostPath }}
-            type: File
         - name: app-logs
           hostPath:
             path: {{ .Values.appLogs.hostPath }}

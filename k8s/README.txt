@@ -44,6 +44,7 @@ kubectl delete ds/ems-client-daemonset cm/ems-client-configmap cm/monitoring-con
 kubectl get pods
 kubectl logs -f $(kubectl get pods -l "app.kubernetes.io/name=ems-server" -o jsonpath="{.items[0].metadata.name}")
 kubectl logs -f $(kubectl get pods -l "app.kubernetes.io/name=suricata-log-processor" -o jsonpath="{.items[0].metadata.name}")
+kubectl logs -f $(kubectl get pods -l "app.kubernetes.io/name=water-flow-monitor" -o jsonpath="{.items[0].metadata.name}")
 
 kubectl exec -it $(kubectl get pods -l "app.kubernetes.io/name=ems-server" -o jsonpath="{.items[0].metadata.name}") -- ./bin/client.sh receive -Uaaa -P111 tcp://localhost:61616?%KAP% 'attack_probability'
 docker exec -it suricata curl http://testmyids.com

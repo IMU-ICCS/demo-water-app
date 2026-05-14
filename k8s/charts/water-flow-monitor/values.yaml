@@ -17,6 +17,10 @@ resources:
     cpu: 100m
     memory: 128Mi
 
+appConf:
+  hostPath: /mnt/host/suricata-log-processor/conf
+  mountPath: /app/conf
+
 appLogs:
   hostPath: /mnt/host/suricata-log-processor/logs
   mountPath: /app/logs

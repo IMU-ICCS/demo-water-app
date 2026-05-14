@@ -102,14 +102,22 @@ def process_json(obj):
         print("Error processing alert: ERR: ", e)
 
 
+ACTIVEMQ_URL = os.getenv("ACTIVEMQ_URL") or "localhost"
+ACTIVEMQ_PORT = os.getenv("ACTIVEMQ_PORT") or "61610"
+ACTIVEMQ_USERNAME = os.getenv("ACTIVEMQ_USERNAME")
+ACTIVEMQ_PASSWORD = os.getenv("ACTIVEMQ_PASSWORD")
+ACTIVEMQ_TOPIC = os.getenv("ACTIVEMQ_TOPIC") or "/topic/alerts_SENSOR"
+SURICATA_EVE_PATH = os.getenv("SURICATA_EVE_PATH") or "/var/log/suricata/eve.json"
 
 
 def main():
     global publisher
-    publisher = ActiveMQPublisher('localhost', port=61610, queue='/topic/alerts_SENSOR')
+    publisher = ActiveMQPublisher(ACTIVEMQ_URL, port=int(ACTIVEMQ_PORT),
+                                  queue=ACTIVEMQ_TOPIC,
+                                  username=ACTIVEMQ_USERNAME, password=ACTIVEMQ_PASSWORD)
     atexit.register(lambda: publisher.disconnect())
 
-    filepath = "/var/log/suricata/eve.json"  # NDJSON file
+    filepath = SURICATA_EVE_PATH  # NDJSON file
     event_handler = JsonFileMonitor(filepath, process_json)
 
     observer = Observer()

@@ -40,7 +40,7 @@ metrics_to_print = {
 }
 
 # Parameters file
-PARAMS_FILE = "params.txt"
+PARAMS_FILE = os.getenv("PARAMS_FILE") or "params.txt"
 
 def get_cpu_usage():
     return psutil.cpu_percent(interval=1)
@@ -50,6 +50,7 @@ def random_from_file(filename):
 
     try:
         if os.path.exists(filename):
+            #print(f'random_from_file::Reading from PARAMS_FILE: {PARAMS_FILE}')
             with open(filename, 'r') as f:
                 line = f.readline().strip()
                 if line:
@@ -57,8 +58,13 @@ def random_from_file(filename):
                     if len(parts) >= 2:
                         lower = float(parts[0])
                         upper = float(parts[1])
-    except Exception:
+                        #print(f'random_from_file::Read from PARAMS_FILE: {lower} - {upper}')
+        else:
+            print(f'random_from_file::PARAMS_FILE not found {PARAMS_FILE}')
+        #print(f'random_from_file::Range: {lower}..{upper}')
+    except Exception as e:
         # If anything goes wrong, keep defaults
+        print(f'random_from_file::ERROR: {e}')
         pass
 
     # Generate random number

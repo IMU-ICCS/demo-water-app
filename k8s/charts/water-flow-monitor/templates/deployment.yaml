@@ -44,12 +44,16 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
 
           volumeMounts:
+            - name: app-conf
+              mountPath: {{ .Values.appConf.mountPath }}
             - name: app-logs
               mountPath: {{ .Values.appLogs.mountPath }}
 
           env:
             - name: MODE
               value: prometheus   # Start prometheus exporter app (rather than default suricata-alert-publisher)
+            - name: PARAMS_FILE
+              value: /app/conf/params.txt
 
             - name: K8S_NODE_NAME
               valueFrom:
@@ -70,6 +74,10 @@ spec:
           {{- end }}
 
       volumes:
+        - name: app-conf
+          hostPath:
+            path: {{ .Values.appConf.hostPath }}
+            type: Directory
         - name: app-logs
           hostPath:
             path: {{ .Values.appLogs.hostPath }}
