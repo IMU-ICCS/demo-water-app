@@ -9,7 +9,7 @@
 apiVersion: nebulous/v1
 kind: MetricModel
 metadata:
-  name: 'Test metric model for Suricata'
+  name: 'Test metric model for combining Suricata alerts and custom metrics'
 spec:
   components:
     - name: zone_7_pump_component
@@ -17,7 +17,11 @@ spec:
         - name: an_slo
           type: slo
           constraint: 'attack_probability > 20'
+        - name: an_slo_2
+          type: slo
+          constraint: 'attack_probability_score > 50'
       metrics:
+        # An 'Attack probability' computation
         - name: attack_probability
           type: "composite"
           # Michaelis–Menten Form (Rational Saturation)
@@ -35,6 +39,21 @@ spec:
           window: 'sliding 2 min'
           output: 'last 10 sec'
 
+        # Alternative 'Attack probability' computation
+        - name: attack_probability_score
+          type: "composite"
+          formula: '100*(1 - (1-alerts_score)*(1-water_score))'
+          output: 'last 10 sec'
+        - name: alerts_score
+          type: "composite"
+          formula: '1 / (1 + exp(-0.45 * (count_alerts - 12.5)))'
+          window: 'sliding 5 sec'
+        - name: water_score
+          type: "composite"
+          formula: '1 / (1 + exp(-0.005 * (water_consumption_avg - 1300)))'
+          window: 'sliding 5 sec'
+
+        # Suricata alert metrics
         - name: count_alerts
           type: 'as-is'
           definition: |
@@ -52,6 +71,7 @@ spec:
         - name: alerts
           sensor: none
 
+        # Water sensor metrics
         - name: "water_consumption_instant"
           type: "raw"
           sensor:
