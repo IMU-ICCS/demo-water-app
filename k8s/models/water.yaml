@@ -42,7 +42,7 @@ spec:
         # Alternative 'Attack probability' computation
         - name: attack_probability_score
           type: "composite"
-          formula: '100*(1 - (1-alerts_score)*(1-water_score))'
+          formula: '100*(1 - (1-alerts_score)^4*(1-water_score))'
           output: 'last 10 sec'
         - name: alerts_score
           type: "composite"
