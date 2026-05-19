@@ -17,7 +17,7 @@ spec:
         - name: an_slo
           type: slo
           constraint: 'attack_probability > 20'
-        - name: an_slo_2
+        - name: attack_probability_too_high
           type: slo
           constraint: 'attack_probability_score > 50'
       metrics:

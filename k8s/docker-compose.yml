@@ -1,4 +1,5 @@
 
+name: water_flow_demo
 services:
 
   suricata:
