@@ -16,3 +16,16 @@ services:
       - ./suricata-data/log:/var/log/suricata
     command: ["-i", "eth0"]
     #restart: "no"
+
+  streamlit-chart:
+    container_name: "streamlit-chart"
+    image: ipatini/streamlit-chart
+    environment:
+      BROKER_HOST: host.docker.internal
+      BROKER_PORT: 61610
+      USERNAME: aaa
+      PASSWORD: 111
+      TOPIC: /topic/attack_probability_score
+      TZ: Europe/Athens
+    ports:
+      - 8501:8501

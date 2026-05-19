@@ -2,10 +2,15 @@
 ---------------------------------------
 -- Preparation
 ---------------------------------------
-Build or push 'suricata-log-processor' image
+Build and push 'suricata-log-processor' image
 cd suricata-log-processor
 docker build -t ....../suricata-log-processor .
 docker push ....../suricata-log-processor:latest
+---------------------------------------
+Build and push 'streamlit-chart' image
+cd streamlit-chart
+docker build -t ....../streamlit-chart .
+docker push ....../streamlit-chart:latest
 ---------------------------------------
 cd k8s
 kind  create cluster --config kind/config-3-nodes.yaml
@@ -27,6 +32,8 @@ docker compose down
 cd k8s
 docker compose up -d suricata
 helm install test .
+# After EMS server is up and running
+docker compose up -d streamlit-chart
 ---------------------------------------
 
 ---------------------------------------
@@ -49,4 +56,6 @@ kubectl logs -f $(kubectl get pods -l "app.kubernetes.io/name=water-flow-monitor
 kubectl exec -it $(kubectl get pods -l "app.kubernetes.io/name=ems-server" -o jsonpath="{.items[0].metadata.name}") -- ./bin/client.sh receive -Uaaa -P111 tcp://localhost:61616?%KAP% 'attack_probability'
 docker exec -it suricata curl http://testmyids.com
 EDIT VALUES IN suricata-log-processor/params.txt
+
+ALSO VIEW chart at http://localhost:8501
 ---------------------------------------

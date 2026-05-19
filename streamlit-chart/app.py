@@ -36,7 +36,7 @@ class Listener(stomp.ConnectionListener):
             timestamp = datetime.now().astimezone().isoformat()
 
             if timestamp is None:
-                timestamp = datetime.utcnow().isoformat()
+                timestamp = datetime.now().astimezone().isoformat()
 
             data_queue.put({
                 "timestamp": timestamp,
