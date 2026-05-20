@@ -10,6 +10,8 @@ services:
       - NET_ADMIN
       - NET_RAW
       - SYS_NICE
+    environment:
+      TZ: Europe/Athens
     volumes:
       - ./suricata-data/lib:/var/lib/suricata
       - ./suricata-data/etc:/etc/suricata
