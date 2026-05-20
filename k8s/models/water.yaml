@@ -46,11 +46,11 @@ spec:
           output: 'last 10 sec'
         - name: alerts_score
           type: "composite"
-          formula: '1 / (1 + exp(-0.45 * (count_alerts - 12.5)))'
+          formula: '1 / (1 + exp(-1.2 * (count_alerts - 15)))'
           window: 'sliding 5 sec'
         - name: water_score
           type: "composite"
-          formula: '1 / (1 + exp(-0.005 * (water_consumption_avg - 1300)))'
+          formula: '1 / (1 + exp(-0.007 * (water_consumption_avg - 1500)))'
           window: 'sliding 5 sec'
 
         # Suricata alert metrics
@@ -61,6 +61,7 @@ spec:
                   3 AS level,
                   current_timestamp AS timestamp
             FROM alerts.win:time(1 minute) AS alerts
+            OUTPUT LAST EVERY 10 SEC
           metrics: [ 'alerts' ]
         - name: all_alerts
           type: 'as-is'
