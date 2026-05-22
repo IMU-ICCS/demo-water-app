@@ -16,8 +16,8 @@ replicaCount: 1
 image:
   repository: "ghcr.io/imu-iccs/ems-server-nebulous"
 #  repository: "registry.gitlab.com/nebulous-project/ems-main/ems-server"
-  pullPolicy: IfNotPresent
-#  pullPolicy: Always
+#  pullPolicy: &pull_policy IfNotPresent
+  pullPolicy: &pull_policy Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: &image_tag "latest"
 #  tag: &image_tag "experiment4"
@@ -261,7 +261,7 @@ env:
 #    value: "latest"
     value: *image_tag
   - name: EMS_CLIENT_DAEMONSET_IMAGE_PULL_POLICY
-    value: "IfNotPresent"
+    value: *pull_policy
 
   #- name: EMS_CLIENT_LOG_LEVEL
   #  value: "TRACE"
